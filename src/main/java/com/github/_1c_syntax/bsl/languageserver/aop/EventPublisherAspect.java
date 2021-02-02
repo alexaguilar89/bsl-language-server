@@ -23,6 +23,8 @@ package com.github._1c_syntax.bsl.languageserver.aop;
 
 import com.github._1c_syntax.bsl.languageserver.configuration.LanguageServerConfiguration;
 import com.github._1c_syntax.bsl.languageserver.configuration.events.LanguageServerConfigurationChangedEvent;
+import com.github._1c_syntax.bsl.languageserver.context.DocumentContext;
+import com.github._1c_syntax.bsl.languageserver.context.events.DocumentContextContentChangedEvent;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.aspectj.lang.JoinPoint;
@@ -48,6 +50,12 @@ public class EventPublisherAspect implements ApplicationEventPublisherAware {
   public void languageServerConfigurationUpdated(JoinPoint joinPoint) {
     var configuration = (LanguageServerConfiguration) joinPoint.getThis();
     applicationEventPublisher.publishEvent(new LanguageServerConfigurationChangedEvent(configuration));
+  }
+
+  @AfterReturning("Pointcuts.isDocumentContext() && Pointcuts.isRebuildCall()")
+  public void documentContextRebuild(JoinPoint joinPoint) {
+    var documentContext = (DocumentContext) joinPoint.getThis();
+    applicationEventPublisher.publishEvent(new DocumentContextContentChangedEvent(documentContext));
   }
 
 }
